@@ -16,6 +16,8 @@ endif
 
 ifeq ($(shell uname),Darwin)
   # macOS specific settings
+  BASE = platform/mac
+  CFLAGS := $(CFLAGS) -pthread -iquote $(BASE)
 endif
 
 .SUFFIXES:
@@ -28,7 +30,7 @@ all: $(APPS) $(TESTS)
 $(APPS): %.exe : %.o $(OBJS) $(DRIVERS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-$(TESTS): %.exe : %.o $(OBJS) $(DRIVERS) test/test.h
+$(TESTS): %.exe : %.o $(OBJS) $(DRIVERS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 .c.o:
