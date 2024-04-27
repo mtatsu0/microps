@@ -39,7 +39,7 @@ dummy_init(void)
     
     dev = net_device_alloc();
     if (!dev) {
-        errorf("net_devicec_alloc() failure");
+        errorf("net_device_alloc() failure");
         return NULL;
     }
     dev->type = NET_DEVICE_TYPE_DUMMY;
@@ -48,7 +48,7 @@ dummy_init(void)
     dev->alen = 0;
     dev->ops = &dummy_ops;
     if (net_device_register(dev) == -1) {
-        errorf("net_device_register() failuer");
+        errorf("net_device_register() failure");
         return NULL;
     }
     intr_request_irq(DUMMY_IRQ, dummy_isr, INTR_IRQ_SHARED, dev->name, dev);

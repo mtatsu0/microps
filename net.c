@@ -94,7 +94,7 @@ net_device_output(struct net_device *dev, uint16_t type, const uint8_t *data, si
 }
 
 int
-net_inupt_handler(uint16_t type, const uint8_t *data, size_t len, struct net_device *dev)
+net_input_handler(uint16_t type, const uint8_t *data, size_t len, struct net_device *dev)
 {
     debugf("dev=%s, type=0x%04x, len=%zu", dev->name, type, len);
     debugdump(data, len);

@@ -55,7 +55,7 @@ extern int
 net_device_output(struct net_device *dev, uint16_t type, const uint8_t *data, size_t len, const void *dst);
 
 extern int
-net_inupt_handler(uint16_t type, const uint8_t *data, size_t len, struct net_device *dev);
+net_input_handler(uint16_t type, const uint8_t *data, size_t len, struct net_device *dev);
 
 extern int
 net_run(void);
