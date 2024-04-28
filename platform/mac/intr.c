@@ -7,6 +7,7 @@
 #include "pthread_barrier.h"
 
 #include "util.h"
+#include "net.h"
 
 struct irq_entry {
     struct irq_entry *next;
@@ -82,7 +83,10 @@ intr_thread(void *arg)
             case SIGHUP:
                 terminate = 1;
                 break;
-            default:
+            case INTR_IRQ_SOFTIRQ: // ソフトウェア割り込みの処理（プロトコルの処理）
+                net_softirq_handler();
+                break;
+            default: // ハードウェア割り込みの処理（デバイスドライバの処理）
                 for (entry = irqs; entry; entry = entry->next) {
                     if (entry->irq == (unsigned int)sig) {
                         debugf("irq=%d, name=%s", entry->irq, entry->name);
@@ -111,7 +115,7 @@ intr_run(void)
         errorf("pthread_create() %s", strerror(err));
         return -1;
     }
-    pthread_barrier_wait(&barrier);
+    pthread_barrier_wait(&barrier); // intr_threadが準備できるまで待ってる？
     return 0;
 }
 
@@ -133,5 +137,7 @@ intr_init(void)
     pthread_barrier_init(&barrier, NULL, 2);
     sigemptyset(&sigmask);
     sigaddset(&sigmask, SIGHUP);
+    sigaddset(&sigmask, SIGUSR1);
+    sigaddset(&sigmask, SIGUSR2);
     return 0;
 }

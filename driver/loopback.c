@@ -10,7 +10,7 @@
 
 #define LOOPBACK_MTU UINT16_MAX
 #define LOOPBACK_QUEUE_LIMIT 16
-#define LOOPBACK_IRQ (INTR_IRQ_BASE+1)
+#define LOOPBACK_IRQ INTR_IRQ_BASE
 
 #define PRIV(x) ((struct loopback *)x->priv)
 

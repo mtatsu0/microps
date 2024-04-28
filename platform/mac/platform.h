@@ -53,6 +53,7 @@ mutex_unlock(mutex_t *mutex)
  */
 
 #define INTR_IRQ_BASE SIGUSR1
+#define INTR_IRQ_SOFTIRQ SIGUSR2
 
 #define INTR_IRQ_SHARED 0x0001
 
