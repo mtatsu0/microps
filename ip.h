@@ -6,6 +6,7 @@
 #include <sys/types.h>
 
 #include "net.h"
+#include "icmp.h"
 
 #define IP_VERSION_IPV4 4
 
@@ -17,6 +18,11 @@
 
 #define IP_ADDR_LEN 4
 #define IP_ADDR_STR_LEN 16 /* ddd.ddd.ddd.ddd¥0 */
+
+/* from iana */
+#define IP_PROTOCOL_ICMP  1
+#define IP_PROTOCOL_TCP   6
+#define IP_PROTOCOL_UDP  17
 
 typedef uint32_t ip_addr_t;
 
@@ -45,6 +51,9 @@ ip_iface_select(ip_addr_t addr);
 
 extern ssize_t
 ip_output(uint8_t protocol, const uint8_t *data, size_t len, ip_addr_t src, ip_addr_t dst);
+
+extern int
+ip_protocol_register(uint8_t type, void (*handler)(const uint8_t *data, size_t len, ip_addr_t src, ip_addr_t dst, struct ip_iface *iface));
 
 extern int
 ip_init(void);
