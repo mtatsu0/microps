@@ -6,7 +6,6 @@
 #include <sys/types.h>
 
 #include "net.h"
-#include "icmp.h"
 
 #define IP_VERSION_IPV4 4
 
