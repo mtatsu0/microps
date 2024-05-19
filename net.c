@@ -10,6 +10,8 @@
 #include "ip.h"
 #include "icmp.h"
 
+#include "driver/ether_bpf.h"
+
 struct net_protocol {
     struct net_protocol *next;
     uint16_t type;
@@ -238,6 +240,12 @@ net_run(void)
     for (dev = devices; dev; dev = dev->next) {
         net_device_open(dev);
     }
+
+    if (ether_bpf_thread_run() == -1) {
+        errorf("ether_bpf_thread_run() failure");
+        return -1;
+    }
+
     debugf("running...");
     return 0;
 }
@@ -252,6 +260,7 @@ net_shutdown(void)
         net_device_close(dev);
     }
     intr_shutdown();
+    ether_bpf_thread_shutdown();
     debugf("shutting down");
 }
 
