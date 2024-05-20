@@ -292,6 +292,8 @@ ether_bpf_thread(void *arg)
     pfd.fd = bpf_device_fd;
     pfd.events = POLLIN;
     
+    // 元々メインスレッドでSIGHUPをブロックしてintr_threadのsigwaitでSIGHUPを待ち受けるしくみなので、
+    // SIGHUPでこのスレッドも止めれるようにSIGHUPをUNBLOCKしておく。(メインスレッドのSIG_BLOCKを引き継いでるから)
     signal(SIGHUP, on_signal);
     sigemptyset(&sigmask);
     sigaddset(&sigmask, SIGHUP);

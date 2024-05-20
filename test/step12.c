@@ -55,7 +55,7 @@ setup(void)
         errorf("ether_bpf_init() failure");
         return -1;
     }
-    iface = ip_iface_alloc(ETHER_TAP_IP_ADDR, ETHER_TAP_NETMASK); // BPFだけど関係ない
+    iface = ip_iface_alloc(ETHER_BPF_IP_ADDR, ETHER_BPF_NETMASK);
     if (!iface) {
         errorf("ip_iface_alloc() failure");
         return -1;

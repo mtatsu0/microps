@@ -12,7 +12,9 @@
 #define ETHER_TAP_HW_ADDR "00:00:5e:00:53:01"
 /* Scope of Documentation Address Blocks (TEST-NET-1). see https://tools.ietf.org/html/rfc5731 */
 #define ETHER_TAP_IP_ADDR "192.0.2.2"
+#define ETHER_BPF_IP_ADDR "192.168.3.100" // 別端末で192.0.2.2にping打っても届かなかったので、ルーターから割り当てられたネットワークアドレス(192.168.3.0)に適当な番号(100)つけてます
 #define ETHER_TAP_NETMASK "255.255.255.0"
+#define ETHER_BPF_NETMASK "255.255.255.0"
 
 #define DEFAULT_GATEWAY "192.0.2.1"
 
