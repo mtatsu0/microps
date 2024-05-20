@@ -26,6 +26,10 @@
 #include <pthread.h>
 #include "pthread_barrier.h"
 
+// for bpf filter
+#include <net/ethernet.h>
+#include <netinet/if_ether.h>
+
 #define BPF_DEVICE_NUM 4
 
 #define ETHER_BPF_IRQ INTR_IRQ_BASE
@@ -132,6 +136,24 @@ ether_bpf_open(struct net_device *dev)
     // header complete mode
     if (ioctl(bpf->fd, BIOCSHDRCMPLT, &enable) == -1) {
         errorf("ioctl [BIOCSHDRCMPLT]");
+        free(bpf_buf);
+        close(bpf->fd);
+        return -1;
+    }
+
+    // ARPのみ許可するBPFフィルタ
+    struct bpf_insn bf_insns[] = {
+        BPF_STMT(BPF_LD+BPF_H+BPF_ABS, 12),
+        BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, ETHERTYPE_ARP, 0, 1),
+        BPF_STMT(BPF_RET+BPF_K, sizeof(struct ether_header) + sizeof(struct ether_arp)),
+        BPF_STMT(BPF_RET+BPF_K, 0),
+     };
+    struct bpf_program bprog = {
+        sizeof(bf_insns) / sizeof(struct bpf_insn),
+        bf_insns
+    };
+    if (ioctl(bpf->fd, BIOCSETFNR, &bprog) < 0 ) {
+        errorf("ioctl [BIOCSETFNR]");
         free(bpf_buf);
         close(bpf->fd);
         return -1;
