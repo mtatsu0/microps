@@ -142,12 +142,27 @@ ether_bpf_open(struct net_device *dev)
     }
 
     // ARPのみ許可するBPFフィルタ
+    /*
     struct bpf_insn bf_insns[] = {
         BPF_STMT(BPF_LD+BPF_H+BPF_ABS, 12),
         BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, ETHERTYPE_ARP, 0, 1),
         BPF_STMT(BPF_RET+BPF_K, sizeof(struct ether_header) + sizeof(struct ether_arp)),
         BPF_STMT(BPF_RET+BPF_K, 0),
-     };
+    };
+    */
+
+    // ARPとETHER_BPF_IP_ADDR(192.168.3.100)へのIPのみ許可するBPFフィルタ
+    struct bpf_insn bf_insns[] = {
+        BPF_STMT(BPF_LD+BPF_H+BPF_ABS, 12),
+        BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, ETHERTYPE_ARP, 0, 1),
+        BPF_STMT(BPF_RET+BPF_K, sizeof(struct ether_header) + sizeof(struct ether_arp)),
+        BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, ETHERTYPE_IP, 0, 3),
+        BPF_STMT(BPF_LD+BPF_W+BPF_ABS, 30),
+        BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, 0xc0a80364, 0, 1),
+        BPF_STMT(BPF_RET+BPF_K, (u_int)-1),
+        BPF_STMT(BPF_RET+BPF_K, 0),
+    };
+
     struct bpf_program bprog = {
         sizeof(bf_insns) / sizeof(struct bpf_insn),
         bf_insns

@@ -9,6 +9,7 @@
 #include "net.h"
 #include "ip.h"
 #include "icmp.h"
+#include "arp.h"
 
 #include "driver/ether_bpf.h"
 
@@ -269,6 +270,11 @@ net_init(void)
 {
     if (intr_init() == -1) {
         errorf("intr_init() failure");
+        return -1;
+    }
+    // Exercise 13-5
+    if (arp_init() == -1) {
+        errorf("arp_init() failure");
         return -1;
     }
     if (ip_init() == -1) {
