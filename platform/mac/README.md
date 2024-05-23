@@ -10,5 +10,5 @@
 ## DAY3
 - driver/ether_tap.hじゃなくてdriver/ether_bpf.hを作成。
 - platform/linux/driver/ether_tap.cじゃなくてplatform/mac/driver/ether_bpf.cを作成。
-- macOSにはF_SETSIGがないので、ETHER_BPF_IRQはSIGUSR1とする（なのでloopbackデバイスと一緒には使えない）
+- ETHER_BPF_IRQはSIGUSR1とする（なのでloopbackデバイスと一緒には使えない）
 - macOSでbpfデバイスに対してF_SETOWNするとinvalid argumentが出てしまうので、別スレッド作ってbpfデバイスをpollで監視して、そこからETHER_BPF_IRQのシグナルを発生させて無理やり元のコードに繋げる。
