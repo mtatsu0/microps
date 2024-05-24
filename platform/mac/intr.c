@@ -2,6 +2,9 @@
 #include <string.h>
 #include <signal.h>
 #include <pthread.h>
+#include <time.h>
+#include <errno.h>
+#include <dispatch/dispatch.h>
 
 #include "platform.h"
 #include "pthread_barrier.h"
@@ -25,6 +28,11 @@ static sigset_t sigmask;
 
 static pthread_t tid;
 static pthread_barrier_t barrier;
+
+struct itimerspec {
+    struct timespec  it_interval;  /* Interval for periodic timer */
+    struct timespec  it_value;     /* Initial expiration */
+};
 
 int
 intr_request_irq(unsigned int irq, int (*handler)(unsigned int irq, void *dev), int flags, const char *name, void *dev)
@@ -65,14 +73,46 @@ intr_raise_irq(unsigned int irq)
     return pthread_kill(tid, (int)irq);
 }
 
+static void
+intr_timer_handler(void *arg)
+{
+    intr_raise_irq(SIGALRM);
+}
+
+static int
+intr_timer_setup(struct itimerspec *interval)
+{
+    if (interval->it_value.tv_sec == 0 && interval->it_value.tv_nsec == 0) {
+        return -1;
+    }
+
+    dispatch_queue_t queue = dispatch_queue_create("microps.queue", 0);
+    dispatch_source_t source = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, queue);
+    dispatch_source_set_event_handler_f(source, intr_timer_handler);
+
+    dispatch_time_t start;
+    start = dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC * interval->it_value.tv_sec + interval->it_value.tv_nsec);
+    dispatch_source_set_timer(source, start, NSEC_PER_SEC * interval->it_value.tv_sec + interval->it_value.tv_nsec, 0);
+    dispatch_resume(source);
+
+    return 0;
+}
+
 static void *
 intr_thread(void *arg)
 {
+    const struct timespec ts = {0, 1000000}; /* 1ms */
+    struct itimerspec interval = {ts, ts};
+
     int terminate = 0, sig, err;
     struct irq_entry *entry;
 
     debugf("start");
     pthread_barrier_wait(&barrier);
+    if (intr_timer_setup(&interval) == -1) {
+        errorf("intr_timer_setup() failure");
+        return NULL;
+    }
     while (!terminate) {
         err = sigwait(&sigmask, &sig);
         if (err) {
@@ -82,6 +122,9 @@ intr_thread(void *arg)
         switch (sig) {
             case SIGHUP:
                 terminate = 1;
+                break;
+            case SIGALRM:
+                net_timer_handler();
                 break;
             case INTR_IRQ_SOFTIRQ: // ソフトウェア割り込みの処理（プロトコルの処理）
                 net_softirq_handler();
@@ -139,5 +182,6 @@ intr_init(void)
     sigaddset(&sigmask, SIGHUP);
     sigaddset(&sigmask, SIGUSR1);
     sigaddset(&sigmask, SIGUSR2);
+    sigaddset(&sigmask, SIGALRM);
     return 0;
 }
