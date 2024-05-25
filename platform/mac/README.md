@@ -13,3 +13,5 @@
 - ETHER_BPF_IRQはSIGUSR1とする（なのでloopbackデバイスと一緒には使えない）
 - macOSでbpfデバイスに対してF_SETOWNするとinvalid argumentが出てしまうので、別スレッド作ってbpfデバイスをpollで監視して、そこからETHER_BPF_IRQのシグナルを発生させて無理やり元のコードに繋げる。
 - macOSにはtimer_create, timer_settime等がないので、代わりに<dispatch/dispatch.h>を使う。
+
+## DAY4
