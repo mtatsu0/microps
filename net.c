@@ -11,6 +11,7 @@
 #include "ip.h"
 #include "icmp.h"
 #include "arp.h"
+#include "udp.h"
 
 #include "driver/ether_bpf.h"
 
@@ -331,6 +332,11 @@ net_init(void)
     }
     if (icmp_init() == -1) {
         errorf("icmp_init() failure");
+        return -1;
+    }
+    // Exercise 18-4
+    if (udp_init() == -1) {
+        errorf("udp_init() failure");
         return -1;
     }
     infof("initialized");
