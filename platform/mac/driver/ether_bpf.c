@@ -45,7 +45,7 @@ struct ether_bpf {
 
 static char *bpf_buf;
 static unsigned int bpf_buf_size;
-static int bpf_device_fd;
+static int bpf_device_fd = -1;
 static struct queue_head bpf_queue;
 struct bpf_queue_entry {
     size_t len;
@@ -326,9 +326,6 @@ ether_bpf_thread(void *arg)
     struct bpf_queue_entry *entry;
     int entry_size = sizeof(*entry);
 
-    pfd.fd = bpf_device_fd;
-    pfd.events = POLLIN;
-    
     // 元々メインスレッドでSIGHUPをブロックしてintr_threadのsigwaitでSIGHUPを待ち受けるしくみなので、
     // SIGHUPでこのスレッドも止めれるようにSIGHUPをUNBLOCKしておく。(メインスレッドのSIG_BLOCKを引き継いでるから)
     signal(SIGHUP, on_signal);
@@ -342,6 +339,14 @@ ether_bpf_thread(void *arg)
 
     pthread_barrier_wait(&barrier);
     debugf("start");
+
+    // もしデバイス開いてなかったらスレッドは寝かせておく
+    if (bpf_device_fd == -1) {
+        while (!terminate) sleep(1);
+        return NULL;
+    }
+    pfd.fd = bpf_device_fd;
+    pfd.events = POLLIN;
     while (!terminate) {
         ret = poll(&pfd, 1, -1);
         if (ret == -1) {
