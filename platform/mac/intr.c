@@ -113,6 +113,8 @@ intr_thread(void *arg)
         errorf("intr_timer_setup() failure");
         return NULL;
     }
+
+    sigaddset(&sigmask, SIGINT); // シグナル足りなくなったのでINTR_IRQ_EVENTにSIGINT使ってる
     while (!terminate) {
         err = sigwait(&sigmask, &sig);
         if (err) {
@@ -128,6 +130,9 @@ intr_thread(void *arg)
                 break;
             case INTR_IRQ_SOFTIRQ: // ソフトウェア割り込みの処理（プロトコルの処理）
                 net_softirq_handler();
+                break;
+            case INTR_IRQ_EVENT:
+                net_event_handler();
                 break;
             default: // ハードウェア割り込みの処理（デバイスドライバの処理）
                 for (entry = irqs; entry; entry = entry->next) {
