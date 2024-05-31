@@ -15,3 +15,4 @@
 - macOSにはtimer_create, timer_settime等がないので、代わりに<dispatch/dispatch.h>を使う。
 
 ## DAY4
+- シグナル足りなくなったのでINTR_IRQ_EVENTにSIGINT使う。
